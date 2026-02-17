@@ -3,11 +3,16 @@
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
+#include "Items/Weapons/Gun.h"
+
 
 
 APlayerCharacter::APlayerCharacter()
 {
     PrimaryActorTick.bCanEverTick = true;
+
+    WeaponSlot = CreateDefaultSubobject<USceneComponent>(TEXT("WeaponSlot"));
+    WeaponSlot->SetupAttachment(GetMesh());
 }
 
 void APlayerCharacter::BeginPlay()
@@ -27,6 +32,21 @@ void APlayerCharacter::BeginPlay()
             }
         }
     }
+
+    if (GunClass)
+    {
+        Gun = GetWorld()->SpawnActor<AGun>(GunClass);
+
+        if (Gun)
+        {
+            Gun->AttachToComponent(
+                WeaponSlot,
+                FAttachmentTransformRules::SnapToTargetIncludingScale
+            );
+
+            Gun->SetOwner(this);
+        }
+    }
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -41,6 +61,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
         EnhancedInput->BindAction(JumpAction, ETriggerEvent::Completed, this, &APlayerCharacter::StopJump);
         EnhancedInput->BindAction(SprintAction, ETriggerEvent::Started, this, &APlayerCharacter::StartSprint);
         EnhancedInput->BindAction(SprintAction, ETriggerEvent::Completed, this, &APlayerCharacter::StopSprint);
+        EnhancedInput->BindAction(FireAction, ETriggerEvent::Started, this, &APlayerCharacter::Fire);
     }
 }
 
@@ -87,4 +108,12 @@ void APlayerCharacter::StartSprint()
 void APlayerCharacter::StopSprint()
 {
     GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
+}
+
+void APlayerCharacter::Fire()
+{
+    if(Gun)
+    {
+        Gun->PullTrigger();
+    }
 }
