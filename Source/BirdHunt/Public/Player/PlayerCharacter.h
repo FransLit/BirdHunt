@@ -7,6 +7,8 @@
 
 class UInputMappingContext;
 class UInputAction;
+class AGun;
+
 
 UCLASS()
 class BIRDHUNT_API APlayerCharacter : public ACharacter
@@ -15,6 +17,15 @@ class BIRDHUNT_API APlayerCharacter : public ACharacter
 
 public:
     APlayerCharacter();
+
+    UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+    TSubclassOf<AGun> GunClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+    AGun* Gun;   // Name it whatever you want
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+    USceneComponent* WeaponSlot;
 
 protected:
     virtual void BeginPlay() override;
@@ -26,6 +37,7 @@ protected:
     void StopJump();
     void StartSprint();
     void StopSprint();
+    void Fire();
 
 private:
     UPROPERTY(EditDefaultsOnly, Category = "Input")
@@ -42,6 +54,9 @@ private:
 
     UPROPERTY(EditDefaultsOnly, Category = "Input")
     UInputAction* SprintAction;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Input")
+    UInputAction* FireAction;
 
     float DefaultWalkSpeed;
     float SprintSpeed = 900.f;
