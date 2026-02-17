@@ -1,29 +1,48 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "InputActionValue.h"
 #include "PlayerCharacter.generated.h"
+
+class UInputMappingContext;
+class UInputAction;
 
 UCLASS()
 class BIRDHUNT_API APlayerCharacter : public ACharacter
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
-	APlayerCharacter();
+    APlayerCharacter();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+    virtual void BeginPlay() override;
+    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+    void Move(const FInputActionValue& Value);
+    void Look(const FInputActionValue& Value);
+    void StartJump();
+    void StopJump();
+    void StartSprint();
+    void StopSprint();
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+private:
+    UPROPERTY(EditDefaultsOnly, Category = "Input")
+    UInputMappingContext* PlayerMappingContext;
 
+    UPROPERTY(EditDefaultsOnly, Category = "Input")
+    UInputAction* MoveAction;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Input")
+    UInputAction* LookAction;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Input")
+    UInputAction* JumpAction;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Input")
+    UInputAction* SprintAction;
+
+    float DefaultWalkSpeed;
+    float SprintSpeed = 900.f;
 };
