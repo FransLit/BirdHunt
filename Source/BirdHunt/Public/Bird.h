@@ -39,6 +39,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	float MaxFlightHeight = 300.f;
 
+	void MoveToEscape(float DeltaTime);
+
+	void OnShot();
+
+	bool bScared = false;
+
 private:
 	// Waypoint & movement state
 	int32 CurrentWaypointIndex = -1;
