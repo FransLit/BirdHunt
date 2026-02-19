@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Curves/CurveFloat.h"
+#include "Components/BoxComponent.h"
 #include "Bird.generated.h"
 
 UCLASS()
@@ -19,19 +19,20 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
-	// Components
+	// ================= COMPONENTS =================
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* Root;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UBoxComponent* CollisionBox;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* Body;
 
-	// ================= SPECIES SYSTEM =================
-	// Assign 6 different meshes in editor
+	// ================= SPECIES =================
 	UPROPERTY(EditDefaultsOnly, Category = "Species")
 	TArray<UStaticMesh*> SpeciesMeshes;
 
-	// Which species this bird is
 	UPROPERTY(VisibleAnywhere, Category = "Species")
 	int32 SpeciesIndex = -1;
 
@@ -55,10 +56,8 @@ public:
 
 private:
 	int32 CurrentWaypointIndex = -1;
-	float TravelTime = 0.f;
 	bool bIsWaiting = false;
 
-	UPROPERTY()
 	FVector StartLocation;
 
 	float WaitTimer = 0.f;
