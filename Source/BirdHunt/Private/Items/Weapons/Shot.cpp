@@ -1,6 +1,7 @@
 
 #include "Items/Weapons/Shot.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Bird.h"
 #include "Components/SphereComponent.h"
 
 AShot::AShot()
@@ -40,4 +41,12 @@ void AShot::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
     const FHitResult& Hit)
 {
     Destroy();
+    if (OtherActor && OtherActor != this)
+    {
+        ABird* HitBird = Cast<ABird>(OtherActor);
+        if (HitBird)
+        {
+            HitBird->OnShot();   
+        }
+    }
 }
