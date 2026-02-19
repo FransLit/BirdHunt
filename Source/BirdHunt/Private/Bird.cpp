@@ -19,6 +19,14 @@ void ABird::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// ================= SPECIES LOGIC =================
+	if (SpeciesMeshes.Num() > 0)
+	{
+		SpeciesIndex = FMath::RandRange(0, SpeciesMeshes.Num() - 1);
+		Body->SetStaticMesh(SpeciesMeshes[SpeciesIndex]);
+	}
+
+	// ================= EXISTING WAYPOINT LOGIC =================
 	ABirdHuntGameMode* GM = Cast<ABirdHuntGameMode>(UGameplayStatics::GetGameMode(this));
 	if (GM && GM->Waypoints.Num() > 0)
 	{
@@ -31,6 +39,7 @@ void ABird::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	MoveToWaypoint(DeltaTime);
 }
+
 void ABird::MoveToEscape(float DeltaTime)
 {
 	if (!bScared) return;
@@ -48,7 +57,6 @@ void ABird::MoveToEscape(float DeltaTime)
 	{
 		WaitTimer += DeltaTime;
 
-		// Level bird while waiting
 		FRotator Rot = GetActorRotation();
 		Rot.Pitch = 0.f;
 		Rot.Roll = 0.f;
@@ -58,9 +66,13 @@ void ABird::MoveToEscape(float DeltaTime)
 		{
 			bIsWaiting = false;
 			WaitTimer = 0.f;
-
 			bScared = false;
-			ChooseNewRandomWaypoint(Cast<ABirdHuntGameMode>(UGameplayStatics::GetGameMode(this))->Waypoints.Num());
+
+			ABirdHuntGameMode* GM = Cast<ABirdHuntGameMode>(UGameplayStatics::GetGameMode(this));
+			if (GM)
+			{
+				ChooseNewRandomWaypoint(GM->Waypoints.Num());
+			}
 		}
 		return;
 	}
@@ -94,20 +106,9 @@ void ABird::MoveToEscape(float DeltaTime)
 
 	SetActorLocation(NewLocation);
 
-	// --- Rotate with pitch while moving, level while waiting ---
-	FRotator NewRotation;
-	if (bIsWaiting)
-	{
-		NewRotation = GetActorRotation();
-		NewRotation.Pitch = 0.f;
-		NewRotation.Roll = 0.f;
-	}
-	else
-	{
-		FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(CurrentLocation, TargetLocation);
-		NewRotation = FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, 5.f);
-		NewRotation.Roll = 0.f; // keep roll level
-	}
+	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(CurrentLocation, TargetLocation);
+	FRotator NewRotation = FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, 5.f);
+	NewRotation.Roll = 0.f;
 	SetActorRotation(NewRotation);
 
 	if (FlightAlpha >= 1.f)
@@ -118,17 +119,10 @@ void ABird::MoveToEscape(float DeltaTime)
 	}
 }
 
-
-
 void ABird::OnShot()
 {
-	// Silloin, kun lintua ammutaan
-
-
-
+	// TODO: your shot logic
 }
-
-
 
 void ABird::ChooseNewRandomWaypoint(int32 WaypointCount)
 {
@@ -142,98 +136,79 @@ void ABird::ChooseNewRandomWaypoint(int32 WaypointCount)
 
 	CurrentWaypointIndex = NewIndex;
 
-
 	StartLocation = GetActorLocation();
 	StartZ = StartLocation.Z;
-
 	FlightAlpha = 0.f;
 	TravelTime = 0.f;
-
 	HeightOffset = FMath::RandRange(MinFlightHeight, MaxFlightHeight);
 }
+
 void ABird::MoveToWaypoint(float DeltaTime)
 {
-	if (!bScared)
+	if (bScared) return;
+
+	ABirdHuntGameMode* GM = Cast<ABirdHuntGameMode>(UGameplayStatics::GetGameMode(this));
+	if (!GM || !GM->Waypoints.IsValidIndex(CurrentWaypointIndex)) return;
+
+	AActor* TargetWaypoint = GM->Waypoints[CurrentWaypointIndex];
+	if (!TargetWaypoint) return;
+
+	if (bIsWaiting)
 	{
-		ABirdHuntGameMode* GM = Cast<ABirdHuntGameMode>(UGameplayStatics::GetGameMode(this));
-		if (!GM || !GM->Waypoints.IsValidIndex(CurrentWaypointIndex)) return;
+		WaitTimer += DeltaTime;
 
-		AActor* TargetWaypoint = GM->Waypoints[CurrentWaypointIndex];
-		if (!TargetWaypoint) return;
+		FRotator Rot = GetActorRotation();
+		Rot.Pitch = 0.f;
+		Rot.Roll = 0.f;
+		SetActorRotation(Rot);
 
-		if (bIsWaiting)
+		if (WaitTimer >= CurrentWaitTime)
 		{
-			WaitTimer += DeltaTime;
-
-			// Level bird while waiting
-			FRotator Rot = GetActorRotation();
-			Rot.Pitch = 0.f;
-			Rot.Roll = 0.f;
-			SetActorRotation(Rot);
-
-			if (WaitTimer >= CurrentWaitTime)
-			{
-				bIsWaiting = false;
-				WaitTimer = 0.f;
-				ChooseNewRandomWaypoint(GM->Waypoints.Num());
-			}
-			return;
+			bIsWaiting = false;
+			WaitTimer = 0.f;
+			ChooseNewRandomWaypoint(GM->Waypoints.Num());
 		}
+		return;
+	}
 
-		FVector CurrentLocation = GetActorLocation();
-		FVector TargetLocation = TargetWaypoint->GetActorLocation();
+	FVector CurrentLocation = GetActorLocation();
+	FVector TargetLocation = TargetWaypoint->GetActorLocation();
 
-		TravelTime += DeltaTime;
+	float FixedSpeed = 700.f;
+	float Distance = (TargetLocation - StartLocation).Size();
+	if (Distance > KINDA_SMALL_NUMBER)
+	{
+		FlightAlpha += (FixedSpeed * DeltaTime) / Distance;
+	}
+	FlightAlpha = FMath::Clamp(FlightAlpha, 0.f, 1.f);
 
-		float FixedSpeed = 700.f;
+	FVector FlatStart = StartLocation;
+	FVector FlatTarget = TargetLocation;
+	FlatStart.Z = 0.f;
+	FlatTarget.Z = 0.f;
+	FVector NewLocation = FMath::Lerp(FlatStart, FlatTarget, FlightAlpha);
 
-		float Distance = (TargetLocation - StartLocation).Size();
-		if (Distance > KINDA_SMALL_NUMBER)
-		{
-			FlightAlpha += (FixedSpeed * DeltaTime) / Distance;
-		}
-		FlightAlpha = FMath::Clamp(FlightAlpha, 0.f, 1.f);
+	float LinearZ = FMath::Lerp(StartZ, TargetLocation.Z, FlightAlpha);
+	float AltitudeDifference = FMath::Abs(TargetLocation.Z - StartZ);
+	float ArcHeight = FMath::Max(HeightOffset, AltitudeDifference);
+	float ArcZ = 4.f * ArcHeight * FlightAlpha * (1.f - FlightAlpha);
+	NewLocation.Z = LinearZ + ArcZ;
 
-		FVector FlatStart = StartLocation;
-		FVector FlatTarget = TargetLocation;
-		FlatStart.Z = 0.f;
-		FlatTarget.Z = 0.f;
+	if (FlightAlpha >= 1.f)
+	{
+		NewLocation = TargetLocation;
+	}
 
-		FVector NewLocation = FMath::Lerp(FlatStart, FlatTarget, FlightAlpha);
+	SetActorLocation(NewLocation);
 
-		float LinearZ = FMath::Lerp(StartZ, TargetLocation.Z, FlightAlpha);
-		float AltitudeDifference = FMath::Abs(TargetLocation.Z - StartZ);
-		float ArcHeight = FMath::Max(HeightOffset, AltitudeDifference);
-		float ArcZ = 4.f * ArcHeight * FlightAlpha * (1.f - FlightAlpha);
-		NewLocation.Z = LinearZ + ArcZ;
+	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(CurrentLocation, TargetLocation);
+	FRotator NewRotation = FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, 5.f);
+	NewRotation.Roll = 0.f;
+	SetActorRotation(NewRotation);
 
-		if (FlightAlpha >= 1.f)
-		{
-			NewLocation = TargetLocation;
-		}
-
-		SetActorLocation(NewLocation);
-
-		// --- Rotate with pitch while moving, level while waiting ---
-		FRotator NewRotation;
-		if (bIsWaiting)
-		{
-			NewRotation = GetActorRotation();
-			NewRotation.Pitch = 0.f;
-			NewRotation.Roll = 0.f;
-		}
-		else
-		{
-			FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(CurrentLocation, TargetLocation);
-			NewRotation = FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, 5.f);
-			NewRotation.Roll = 0.f; // keep roll level
-		}
-		SetActorRotation(NewRotation);
-
-		if (FlightAlpha >= 1.f)
-		{
-			bIsWaiting = true;
-			CurrentWaitTime = FMath::RandRange(MinWaitTime, MaxWaitTime);
-		}
+	if (FlightAlpha >= 1.f)
+	{
+		bIsWaiting = true;
+		CurrentWaitTime = FMath::RandRange(MinWaitTime, MaxWaitTime);
 	}
 }
