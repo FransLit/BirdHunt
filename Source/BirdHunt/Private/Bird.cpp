@@ -3,37 +3,30 @@
 #include "EscapePoint.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "NiagaraFunctionLibrary.h"
 
 ABird::ABird()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	// Root
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	RootComponent = Root;
 
-	// Collision Box
 	CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
 	CollisionBox->SetupAttachment(RootComponent);
 	CollisionBox->SetBoxExtent(FVector(30.f));
 
 	CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	CollisionBox->SetCollisionObjectType(ECC_WorldDynamic);
-
-	// Ignore everything first
 	CollisionBox->SetCollisionResponseToAllChannels(ECR_Ignore);
-
-	// Block world + projectiles
 	CollisionBox->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
 	CollisionBox->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);
 
-	// Ignore other birds (same object type)
-	CollisionBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
-
-	// Mesh
 	Body = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Body"));
 	Body->SetupAttachment(CollisionBox);
 	Body->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+
 }
 
 void ABird::BeginPlay()
@@ -60,16 +53,36 @@ void ABird::Tick(float DeltaTime)
 	if (bScared)
 	{
 		MoveToEscape(DeltaTime);
+
+		ScaredTimer -= DeltaTime;
+		if (ScaredTimer <= 0.f)
+		{
+			bScared = false;      // stop escaping
+			ScaredTimer = 0.f;    // reset
+		}
 	}
 	else
-	{
 		MoveToWaypoint(DeltaTime);
-	}
 }
 
 void ABird::OnShot()
 {
-	//check specie killed and cast to gamemode to spawn new maybe
+	if (ShotEffect)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			GetWorld(),
+			ShotEffect,
+			GetActorLocation(),
+			GetActorRotation()
+		);
+	}
+
+	ABirdHuntGameMode* GM = Cast<ABirdHuntGameMode>(UGameplayStatics::GetGameMode(this));
+	if (GM)
+	{
+		GM->RegisterShot(SpeciesIndex);
+	}
+
 	Destroy();
 }
 
@@ -102,7 +115,6 @@ void ABird::MoveToWaypoint(float DeltaTime)
 	if (bIsWaiting)
 	{
 		WaitTimer += DeltaTime;
-
 		if (WaitTimer >= CurrentWaitTime)
 		{
 			bIsWaiting = false;
@@ -117,10 +129,10 @@ void ABird::MoveToWaypoint(float DeltaTime)
 
 	float Speed = 700.f;
 	float Distance = (TargetLocation - StartLocation).Size();
+
 	if (Distance > KINDA_SMALL_NUMBER)
-	{
 		FlightAlpha += (Speed * DeltaTime) / Distance;
-	}
+
 	FlightAlpha = FMath::Clamp(FlightAlpha, 0.f, 1.f);
 
 	FVector NewLocation = FMath::Lerp(StartLocation, TargetLocation, FlightAlpha);
@@ -148,6 +160,7 @@ void ABird::MoveToEscape(float DeltaTime)
 {
 	AActor* FoundActor =
 		UGameplayStatics::GetActorOfClass(GetWorld(), AEscapePoint::StaticClass());
+
 	if (!FoundActor) return;
 
 	FVector TargetLocation = FoundActor->GetActorLocation();
@@ -155,9 +168,8 @@ void ABird::MoveToEscape(float DeltaTime)
 
 	float Speed = 1000.f;
 	FVector Direction = (TargetLocation - CurrentLocation).GetSafeNormal();
-	FVector NewLocation = CurrentLocation + Direction * Speed * DeltaTime;
 
-	SetActorLocation(NewLocation);
+	SetActorLocation(CurrentLocation + Direction * Speed * DeltaTime);
 
 	FRotator TargetRotation =
 		UKismetMathLibrary::FindLookAtRotation(CurrentLocation, TargetLocation);
