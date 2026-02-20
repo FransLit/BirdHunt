@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/BoxComponent.h"
+#include "NiagaraSystem.h"
 #include "Bird.generated.h"
 
 UCLASS()
@@ -19,7 +20,7 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
-	// ================= COMPONENTS =================
+	// Components
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* Root;
 
@@ -29,14 +30,14 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* Body;
 
-	// ================= SPECIES =================
+	// Species
 	UPROPERTY(EditDefaultsOnly, Category = "Species")
 	TArray<UStaticMesh*> SpeciesMeshes;
 
 	UPROPERTY(VisibleAnywhere, Category = "Species")
 	int32 SpeciesIndex = -1;
 
-	// ================= MOVEMENT =================
+	// Movement
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	float MinWaitTime = 1.f;
 
@@ -49,10 +50,16 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	float MaxFlightHeight = 300.f;
 
-	void MoveToEscape(float DeltaTime);
-	void OnShot();
+	// VFX
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "VFX")
+	UNiagaraSystem* ShotEffect;
 
 	bool bScared = false;
+
+	float ScaredTimer = 0.f;
+
+	void OnShot();
+	void MoveToEscape(float DeltaTime);
 
 private:
 	int32 CurrentWaypointIndex = -1;
