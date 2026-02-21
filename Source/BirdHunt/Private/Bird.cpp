@@ -4,6 +4,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Animation/AnimInstance.h"
+
 
 ABird::ABird()
 {
@@ -22,7 +25,7 @@ ABird::ABird()
 	CollisionBox->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
 	CollisionBox->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);
 
-	Body = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Body"));
+	Body = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Body"));
 	Body->SetupAttachment(CollisionBox);
 	Body->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
@@ -36,7 +39,10 @@ void ABird::BeginPlay()
 	if (SpeciesMeshes.Num() > 0)
 	{
 		SpeciesIndex = FMath::RandRange(0, SpeciesMeshes.Num() - 1);
-		Body->SetStaticMesh(SpeciesMeshes[SpeciesIndex]);
+		if(SpeciesMeshes.IsValidIndex(SpeciesIndex))
+		Body->SetSkeletalMesh(SpeciesMeshes[SpeciesIndex]);
+		if (SpeciesAnimInstances.IsValidIndex(SpeciesIndex))
+		Body->SetAnimInstanceClass(SpeciesAnimInstances[SpeciesIndex]);
 	}
 
 	ABirdHuntGameMode* GM = Cast<ABirdHuntGameMode>(UGameplayStatics::GetGameMode(this));
@@ -89,7 +95,9 @@ void ABird::OnShot()
 		GM->RegisterShot(SpeciesIndex);
 	}
 
-	Destroy();
+	Body->SetSimulatePhysics(true);
+
+	//Destroy();
 }
 
 void ABird::ChooseNewRandomWaypoint(int32 WaypointCount)

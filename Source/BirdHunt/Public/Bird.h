@@ -6,6 +6,9 @@
 #include "NiagaraSystem.h"
 #include "Bird.generated.h"
 
+class USkeletalMeshComponent;
+class UAnimInstance;
+
 UCLASS()
 class BIRDHUNT_API ABird : public AActor
 {
@@ -28,11 +31,15 @@ public:
 	UBoxComponent* CollisionBox;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UStaticMeshComponent* Body;
+	USkeletalMeshComponent* Body;
 
 	// Species
 	UPROPERTY(EditDefaultsOnly, Category = "Species")
-	TArray<UStaticMesh*> SpeciesMeshes;
+	TArray<USkeletalMesh*> SpeciesMeshes;
+
+	// Species
+	UPROPERTY(EditDefaultsOnly, Category = "Species")
+	TArray<TSubclassOf<UAnimInstance>> SpeciesAnimInstances;
 
 	UPROPERTY(VisibleAnywhere, Category = "Species")
 	int32 SpeciesIndex = -1;
