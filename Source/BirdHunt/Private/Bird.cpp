@@ -184,3 +184,9 @@ void ABird::MoveToEscape(float DeltaTime)
 		FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, 5.f)
 	);
 }
+
+void ABird::IncrementScaredTimer(float increment)
+{
+	ScaredTimer = ScaredTimer + increment;
+	ScaredTimer = FMath::Clamp(ScaredTimer, 0, 10.f);
+}

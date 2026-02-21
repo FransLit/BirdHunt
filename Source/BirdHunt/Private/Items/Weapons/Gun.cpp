@@ -52,9 +52,8 @@ void AGun::PullTrigger()
 			if (Distance <= 3000.f)
 			{
 				Bird->bScared = true;
-				Bird->ScaredTimer = 10.f;
-
-				UE_LOG(LogTemp, Warning, TEXT("Bird scared: %s"), *Bird->GetName());
+				Bird->IncrementScaredTimer(5 + FMath::RandRange(0.0,5.0));
+				UE_LOG(LogTemp, Warning, TEXT("Bird scared: %s %f"), *Bird->GetName(), Bird->ScaredTimer);
 			}
 		}
 
