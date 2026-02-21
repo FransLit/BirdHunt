@@ -57,12 +57,18 @@ void ABird::Tick(float DeltaTime)
 		ScaredTimer -= DeltaTime;
 		if (ScaredTimer <= 0.f)
 		{
-			bScared = false;      // stop escaping
-			ScaredTimer = 0.f;    // reset
+			bScared = false;
+			ScaredTimer = 0.f;
+
+
+			StartLocation = GetActorLocation();
+			FlightAlpha = 0.f;
 		}
 	}
 	else
+	{
 		MoveToWaypoint(DeltaTime);
+	}
 }
 
 void ABird::OnShot()
