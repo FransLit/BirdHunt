@@ -4,7 +4,7 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "PlayerCharacter.generated.h"
-
+class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 class AGun;
@@ -26,9 +26,12 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
     USceneComponent* WeaponSlot;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+    UCameraComponent* Camera;
 
 protected:
     virtual void BeginPlay() override;
+    virtual void Tick(float DeltaTime);
     virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
     void Move(const FInputActionValue& Value);
@@ -38,14 +41,16 @@ protected:
     void StartSprint();
     void StopSprint();
     void Fire();
-
+    void Aim();
+    
 private:
     UPROPERTY(EditDefaultsOnly, Category = "Input")
     UInputMappingContext* PlayerMappingContext;
 
     UPROPERTY(EditDefaultsOnly, Category = "Input")
     UInputAction* MoveAction;
-
+    UPROPERTY(EditDefaultsOnly, Category = "Input")
+    UInputAction* AimAction;
     UPROPERTY(EditDefaultsOnly, Category = "Input")
     UInputAction* LookAction;
 
@@ -57,7 +62,7 @@ private:
 
     UPROPERTY(EditDefaultsOnly, Category = "Input")
     UInputAction* FireAction;
-
+    bool bAiming = false;
     float DefaultWalkSpeed;
     float SprintSpeed = 900.f;
 };

@@ -4,15 +4,23 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Items/Weapons/Gun.h"
-
-
+#include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Math/UnrealMathUtility.h"
 
 APlayerCharacter::APlayerCharacter()
 {
     PrimaryActorTick.bCanEverTick = true;
 
+    
+
+    Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+    Camera->SetupAttachment(Cast<USceneComponent>(GetCapsuleComponent()));
+    Camera->SetRelativeLocation(FVector(0, 0, 60));
+    Camera->bUsePawnControlRotation = true;
+
     WeaponSlot = CreateDefaultSubobject<USceneComponent>(TEXT("WeaponSlot"));
-    WeaponSlot->SetupAttachment(GetMesh());
+    WeaponSlot->SetupAttachment(Camera);
 }
 
 void APlayerCharacter::BeginPlay()
@@ -49,6 +57,34 @@ void APlayerCharacter::BeginPlay()
     }
 }
 
+void APlayerCharacter::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    if (!bAiming)
+    {
+        /*
+        * if (WeaponSlot->GetRelativeLocation().Y != 30.0f)
+        {
+            
+
+                float y = DeltaTime * 0.1f + WeaponSlot->GetRelativeLocation().Y;
+            WeaponSlot->SetRelativeLocation(Result);
+        }
+        */
+        FVector Result = FMath::Lerp(WeaponSlot->GetRelativeLocation(), FVector(0, 30, -30), 0.1f);
+        //float y = DeltaTime * 0.1f + WeaponSlot->GetRelativeLocation().Y;
+        WeaponSlot->SetRelativeLocation(Result);
+        UE_LOG(LogTemp, Warning, TEXT("NOT AIMING"));
+    }
+    else
+    {
+        FVector Result = FMath::Lerp(WeaponSlot->GetRelativeLocation(), FVector(0, 0, -30), 0.1f);
+        WeaponSlot->SetRelativeLocation(Result);
+        UE_LOG(LogTemp, Warning, TEXT("AIMING"));
+    }
+}
+
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -62,6 +98,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
         EnhancedInput->BindAction(SprintAction, ETriggerEvent::Started, this, &APlayerCharacter::StartSprint);
         EnhancedInput->BindAction(SprintAction, ETriggerEvent::Completed, this, &APlayerCharacter::StopSprint);
         EnhancedInput->BindAction(FireAction, ETriggerEvent::Started, this, &APlayerCharacter::Fire);
+        EnhancedInput->BindAction(AimAction, ETriggerEvent::Started, this, &APlayerCharacter::Aim);
     }
 }
 
@@ -115,5 +152,12 @@ void APlayerCharacter::Fire()
     if(Gun)
     {
         Gun->PullTrigger();
+    }
+}
+void APlayerCharacter::Aim()
+{
+    if (WeaponSlot)
+    {
+        bAiming = !bAiming;
     }
 }

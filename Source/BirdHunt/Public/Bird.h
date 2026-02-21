@@ -61,6 +61,8 @@ public:
 	void OnShot();
 	void MoveToEscape(float DeltaTime);
 
+	void IncrementScaredTimer(float increment);
+
 private:
 	int32 CurrentWaypointIndex = -1;
 	bool bIsWaiting = false;
