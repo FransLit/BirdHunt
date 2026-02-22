@@ -16,10 +16,35 @@ AGun::AGun()
 	MuzzleLocation->SetupAttachment(RootComponent);
 }
 
+void AGun::Reload()
+{
+    ShotsRemaining = 1;
+    bReloading = false;
+    UE_LOG(LogTemp, Warning, TEXT("Reload finished"));
+}
+
+void AGun::StartReloading()
+{
+    FTimerHandle TimerHandle;
+
+    bReloading = true;
+
+    UE_LOG(LogTemp, Warning, TEXT("Reloading"));
+
+    GetWorld()->GetTimerManager().SetTimer(
+        TimerHandle,
+        [this]()
+        {
+            Reload();
+        },
+        ReloadTime,
+        false
+    );
+}
+
 void AGun::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void AGun::Tick(float DeltaTime)
@@ -30,33 +55,39 @@ void AGun::Tick(float DeltaTime)
 
 void AGun::PullTrigger()
 {
-	if (ProjectileClass)
-	{
-		UE_LOG(LogTemp, Error, TEXT("FIRE"))
-		FVector Location = MuzzleLocation->GetComponentLocation();
-		FRotator Rotation = MuzzleLocation->GetComponentRotation();
-		GetWorld()->SpawnActor<AShot>(ProjectileClass, Location, Rotation);
+    if (!ProjectileClass || ShotsRemaining == 0) return;
 
-		TArray<AActor*> FoundBirds;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABird::StaticClass(), FoundBirds);
+    UE_LOG(LogTemp, Warning, TEXT("FIRE"));
 
-		for (AActor* Actor : FoundBirds)
-		{
-			ABird* Bird = Cast<ABird>(Actor);
-			if (!Bird)
-				continue;
+    FVector Location = MuzzleLocation->GetComponentLocation();
+    FVector Forward = MuzzleLocation->GetForwardVector();
 
-			float Distance = FVector::Dist(Bird->GetActorLocation(), Location);
+    float SpreadRad = FMath::DegreesToRadians(SpreadAngle);
 
-			
-			if (Distance <= 3000.f)
-			{
-				Bird->bScared = true;
-				Bird->IncrementScaredTimer(5 + FMath::RandRange(0.0,5.0));
-				UE_LOG(LogTemp, Warning, TEXT("Bird scared: %s %f"), *Bird->GetName(), Bird->ScaredTimer);
-			}
-		}
+    for (int32 i = 0; i < PelletCount; i++)
+    {
+        FVector ShotDirection = FMath::VRandCone(Forward, SpreadRad);
+        FRotator ShotRotation = ShotDirection.Rotation();
 
-		
-	}
+        GetWorld()->SpawnActor<AShot>(ProjectileClass, Location, ShotRotation);
+    }
+    ShotsRemaining = 0;
+
+    TArray<AActor*> FoundBirds;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABird::StaticClass(), FoundBirds);
+
+    for (AActor* Actor : FoundBirds)
+    {
+        ABird* Bird = Cast<ABird>(Actor);
+        if (!Bird) continue;
+
+        float Distance = FVector::Dist(Bird->GetActorLocation(), Location);
+
+        if (Distance <= 3000.f)
+        {
+            Bird->SetScaredWithDelay();
+            Bird->IncrementScaredTimer(5 + FMath::FRandRange(0.0f, 5.0f));
+            UE_LOG(LogTemp, Warning, TEXT("Bird scared: %s %f"), *Bird->GetName(), Bird->ScaredTimer);
+        }
+    }
 }

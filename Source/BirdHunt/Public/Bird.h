@@ -70,6 +70,9 @@ public:
 
 	void IncrementScaredTimer(float increment);
 
+	void SetScaredWithDelay();
+	void SetScared();
+
 private:
 	int32 CurrentWaypointIndex = -1;
 	bool bIsWaiting = false;

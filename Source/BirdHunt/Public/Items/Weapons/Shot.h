@@ -30,6 +30,9 @@ protected:
         UPrimitiveComponent* OtherComp, FVector NormalImpulse,
         const FHitResult& Hit);
 
+    UPROPERTY(EditDefaultsOnly, Category = "Shotgun")
+    float SpreadAngle = 5.f; // degrees
+
 public:	
 	virtual void Tick(float DeltaTime) override;
 };

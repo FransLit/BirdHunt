@@ -42,6 +42,7 @@ protected:
     void StopSprint();
     void Fire();
     void Aim();
+    void Reload();
     
 private:
     UPROPERTY(EditDefaultsOnly, Category = "Input")
@@ -62,6 +63,9 @@ private:
 
     UPROPERTY(EditDefaultsOnly, Category = "Input")
     UInputAction* FireAction;
+    UPROPERTY(EditDefaultsOnly, Category = "Input")
+    UInputAction* ReloadAction;
+
     bool bAiming = false;
     float DefaultWalkSpeed;
     float SprintSpeed = 900.f;

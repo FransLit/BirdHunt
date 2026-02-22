@@ -198,3 +198,27 @@ void ABird::IncrementScaredTimer(float increment)
 	ScaredTimer = ScaredTimer + increment;
 	ScaredTimer = FMath::Clamp(ScaredTimer, 0, 10.f);
 }
+
+void ABird::SetScaredWithDelay()
+{
+	if (!GetWorld()) return;
+
+	float Delay = FMath::FRandRange(1.0f, 5.0f);
+
+	FTimerHandle TimerHandle;
+
+	GetWorld()->GetTimerManager().SetTimer(
+		TimerHandle,
+		[this]()
+		{
+			bScared = true;
+		},
+		Delay,
+		false
+	);
+}
+
+void ABird::SetScared()
+{
+	bScared = true;
+}
