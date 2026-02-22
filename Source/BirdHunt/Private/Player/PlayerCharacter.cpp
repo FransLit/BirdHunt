@@ -75,13 +75,13 @@ void APlayerCharacter::Tick(float DeltaTime)
         FVector Result = FMath::Lerp(WeaponSlot->GetRelativeLocation(), FVector(0, 30, -30), 0.1f);
         //float y = DeltaTime * 0.1f + WeaponSlot->GetRelativeLocation().Y;
         WeaponSlot->SetRelativeLocation(Result);
-        UE_LOG(LogTemp, Warning, TEXT("NOT AIMING"));
+        //UE_LOG(LogTemp, Warning, TEXT("NOT AIMING"));
     }
     else
     {
         FVector Result = FMath::Lerp(WeaponSlot->GetRelativeLocation(), FVector(0, 0, -30), 0.1f);
         WeaponSlot->SetRelativeLocation(Result);
-        UE_LOG(LogTemp, Warning, TEXT("AIMING"));
+        //UE_LOG(LogTemp, Warning, TEXT("AIMING"));
     }
 }
 
@@ -99,6 +99,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
         EnhancedInput->BindAction(SprintAction, ETriggerEvent::Completed, this, &APlayerCharacter::StopSprint);
         EnhancedInput->BindAction(FireAction, ETriggerEvent::Started, this, &APlayerCharacter::Fire);
         EnhancedInput->BindAction(AimAction, ETriggerEvent::Started, this, &APlayerCharacter::Aim);
+        EnhancedInput->BindAction(ReloadAction, ETriggerEvent::Started, this, &APlayerCharacter::Reload);
     }
 }
 
@@ -149,7 +150,7 @@ void APlayerCharacter::StopSprint()
 
 void APlayerCharacter::Fire()
 {
-    if(Gun)
+    if(Gun || !Gun->bReloading)
     {
         Gun->PullTrigger();
     }
@@ -159,5 +160,13 @@ void APlayerCharacter::Aim()
     if (WeaponSlot)
     {
         bAiming = !bAiming;
+    }
+}
+
+void APlayerCharacter::Reload()
+{
+    if (Gun || !Gun->bReloading)
+    {
+        Gun->StartReloading();
     }
 }

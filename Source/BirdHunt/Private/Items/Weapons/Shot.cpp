@@ -9,9 +9,19 @@ AShot::AShot()
     PrimaryActorTick.bCanEverTick = false;
 
     CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
-    CollisionComponent->InitSphereRadius(15.f);
-    CollisionComponent->SetCollisionProfileName(TEXT("BlockAllDynamic"));
+    CollisionComponent->InitSphereRadius(8.f);
     RootComponent = CollisionComponent;
+
+    CollisionComponent->SetCollisionObjectType(ECC_GameTraceChannel1); // Pellet
+
+    CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+
+    // Block environment
+    CollisionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+
+    // Block birds (since ABird is likely WorldDynamic)
+    CollisionComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);
 
     CollisionComponent->OnComponentHit.AddDynamic(this, &AShot::OnHit);
 
@@ -20,15 +30,25 @@ AShot::AShot()
     ProjectileMovement->MaxSpeed = 6000.f;
     ProjectileMovement->bRotationFollowsVelocity = true;
     ProjectileMovement->bShouldBounce = false;
+    ProjectileMovement->ProjectileGravityScale = 0.f;
 
     InitialLifeSpan = 3.0f;
-
 }
 
 void AShot::BeginPlay()
 {
-	Super::BeginPlay();
-	
+    Super::BeginPlay();
+
+    //if (ProjectileMovement)
+    //{
+    //    FVector Forward = GetActorForwardVector();
+
+    //    float SpreadRad = FMath::DegreesToRadians(SpreadAngle);
+
+    //    FVector NewDirection = FMath::VRandCone(Forward, SpreadRad);
+
+    //    ProjectileMovement->Velocity = NewDirection * ProjectileMovement->InitialSpeed;
+    //}
 }
 
 void AShot::Tick(float DeltaTime)
