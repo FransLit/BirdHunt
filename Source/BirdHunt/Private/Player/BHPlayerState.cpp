@@ -18,6 +18,7 @@ void ABHPlayerState::OnRepSpeciesShotCounts()
     APawn* Pawn = GetPawn();
     if (!Pawn) return;
 
+
     ABHPlayerController* PC = Cast<ABHPlayerController>(Pawn->GetController());
     if (!PC) return;
 

@@ -26,12 +26,10 @@ void ABirdHuntGameMode::RegisterShot(AActor* owner, int32 SpeciesIndex)
 	ABHPlayerState* PS = Cast<ABHPlayerState>(PlayerState);
 	if (PS)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Shot a bird 1"))
 		if(PS->SpeciesShotCounts.IsValidIndex(SpeciesIndex))
 		{
-			UE_LOG(LogTemp, Error, TEXT("Shot a bird 2"))
-			PS->OnRepSpeciesShotCounts();
 			PS->SpeciesShotCounts[SpeciesIndex] += 1;
+			PS->OnRepSpeciesShotCounts();
 		}
 	}
 	//ABird* DefaultBird = BirdClass->GetDefaultObject<ABird>();
@@ -103,7 +101,14 @@ void ABirdHuntGameMode::PostLogin(APlayerController* NewPlayer)
 		ABHPlayerState* PS = Cast<ABHPlayerState>(NewPlayer->GetPlayerState<ABHPlayerState>());
 		if (PS)
 		{
+			UE_LOG(LogTemp,Error,TEXT("SETUP SpeciesShotCounts"))
 			PS->SpeciesShotCounts.Init(0, NumSpecies);
 		}
 	}
+}
+
+void ABirdHuntGameMode::HandleStartingNewPlayer(APlayerController* NewPlayer)
+{
+	Super::HandleStartingNewPlayer(NewPlayer);
+
 }
