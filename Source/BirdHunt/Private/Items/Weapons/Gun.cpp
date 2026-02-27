@@ -14,6 +14,9 @@ AGun::AGun()
 
 	MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocation"));
 	MuzzleLocation->SetupAttachment(RootComponent);
+
+    Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
+    Mesh->SetupAttachment(RootComponent);
 }
 
 void AGun::Reload()
@@ -57,6 +60,7 @@ void AGun::PullTrigger()
     if (!ProjectileClass || ShotsRemaining == 0) return;
 
     UE_LOG(LogTemp, Warning, TEXT("FIRE"));
+    PlayRecoil();
 
     FVector Location = MuzzleLocation->GetComponentLocation();
     FVector Forward = MuzzleLocation->GetForwardVector();
@@ -89,5 +93,18 @@ void AGun::PullTrigger()
             Bird->IncrementScaredTimer(5 + FMath::FRandRange(0.0f, 5.0f));
             UE_LOG(LogTemp, Warning, TEXT("Bird scared: %s %f"), *Bird->GetName(), Bird->ScaredTimer);
         }
+    }
+}
+
+void AGun::PlayRecoil()
+{
+    if (!RecoilMontage && Mesh) return;
+
+    UAnimInstance* AnimInstance = Mesh->GetAnimInstance();
+    if (AnimInstance && !AnimInstance->Montage_IsPlaying(RecoilMontage))
+    {
+        AnimInstance->Montage_Play(RecoilMontage, 1.0f);
+        // Optionally jump to section if needed
+        // AnimInstance->Montage_JumpToSection(FName("Fire"), RecoilMontage);
     }
 }

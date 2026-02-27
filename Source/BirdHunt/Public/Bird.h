@@ -73,8 +73,18 @@ public:
 	void SetScaredWithDelay();
 	void SetScared();
 
+	void TraceToGround();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bird|Movement")
 	bool bDead = false;
 
+	FVector GroundTargetLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bird|Movement")
+	bool bFalling = false;
+
+	UPROPERTY(EditAnywhere, Category = "Bird|Movement")
+	float FallSpeed = 500.f;
 private:
 	int32 CurrentWaypointIndex = -1;
 	bool bIsWaiting = false;
@@ -90,4 +100,6 @@ private:
 
 	void MoveToWaypoint(float DeltaTime);
 	void ChooseNewRandomWaypoint(int32 WaypointCount);
+
+
 };

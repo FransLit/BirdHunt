@@ -34,6 +34,14 @@ public:
     UPROPERTY(EditAnywhere, Category = "Shotgun")
     int ReloadTime = 2.f;
 
+    void PlayRecoil();
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations")
+    UAnimMontage* RecoilMontage;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    USkeletalMeshComponent* Mesh;
+
 protected:
 	virtual void BeginPlay() override;
 
