@@ -8,7 +8,7 @@ public class BirdHunt : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Niagara", "EnhancedInput" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Niagara", "UMG", "Slate", "SlateCore", "EnhancedInput" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
