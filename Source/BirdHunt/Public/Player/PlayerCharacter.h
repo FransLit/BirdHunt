@@ -43,6 +43,7 @@ protected:
     void Fire();
     void Aim();
     void Reload();
+    void ShowStats();
     
 private:
     UPROPERTY(EditDefaultsOnly, Category = "Input")
@@ -65,6 +66,8 @@ private:
     UInputAction* FireAction;
     UPROPERTY(EditDefaultsOnly, Category = "Input")
     UInputAction* ReloadAction;
+    UPROPERTY(EditDefaultsOnly, Category = "Input")
+    UInputAction* StatsAction;
 
     bool bAiming = false;
     float DefaultWalkSpeed;

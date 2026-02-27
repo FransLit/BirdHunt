@@ -7,12 +7,12 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Math/UnrealMathUtility.h"
+#include "Player/BHPlayerController.h"
+
 
 APlayerCharacter::APlayerCharacter()
 {
     PrimaryActorTick.bCanEverTick = true;
-
-    
 
     Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
     Camera->SetupAttachment(Cast<USceneComponent>(GetCapsuleComponent()));
@@ -100,6 +100,13 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
         EnhancedInput->BindAction(FireAction, ETriggerEvent::Started, this, &APlayerCharacter::Fire);
         EnhancedInput->BindAction(AimAction, ETriggerEvent::Started, this, &APlayerCharacter::Aim);
         EnhancedInput->BindAction(ReloadAction, ETriggerEvent::Started, this, &APlayerCharacter::Reload);
+
+        auto* controller = Cast<ABHPlayerController>(GetController());
+        if(controller && controller->IsLocalController())
+        {
+            EnhancedInput->BindAction(StatsAction, ETriggerEvent::Started, controller, &ABHPlayerController::ShowStats);
+            EnhancedInput->BindAction(StatsAction, ETriggerEvent::Completed, controller, &ABHPlayerController::ShowStats);
+        }
     }
 }
 
@@ -169,4 +176,8 @@ void APlayerCharacter::Reload()
     {
         Gun->StartReloading();
     }
+}
+
+void APlayerCharacter::ShowStats()
+{
 }

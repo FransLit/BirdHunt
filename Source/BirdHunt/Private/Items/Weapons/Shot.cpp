@@ -3,6 +3,10 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Bird.h"
 #include "Components/SphereComponent.h"
+#include "Framework/BirdHuntGameMode.h"
+#include "Kismet/GameplayStatics.h"
+
+
 
 AShot::AShot()
 {
@@ -60,13 +64,19 @@ void AShot::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
     UPrimitiveComponent* OtherComp, FVector NormalImpulse,
     const FHitResult& Hit)
 {
-    Destroy();
     if (OtherActor && OtherActor != this)
     {
         ABird* HitBird = Cast<ABird>(OtherActor);
-        if (HitBird)
+        if (HitBird && !HitBird->bDead)
         {
-            HitBird->OnShot();   
+            HitBird->bDead = true;
+            HitBird->OnShot(); 
+            ABirdHuntGameMode* GM = Cast<ABirdHuntGameMode>(UGameplayStatics::GetGameMode(this));
+            if (GM)
+            {
+                GM->RegisterShot(this->Owner, HitBird->SpeciesIndex);
+            }
+            Destroy();
         }
     }
 }

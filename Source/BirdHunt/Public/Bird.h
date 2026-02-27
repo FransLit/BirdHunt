@@ -41,7 +41,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Species")
 	TArray<TSubclassOf<UAnimInstance>> SpeciesAnimInstances;
 
-	UPROPERTY(VisibleAnywhere, Category = "Species")
+	UPROPERTY(EditAnywhere, Category = "Species")
 	int32 SpeciesIndex = -1;
 
 	// Movement
@@ -72,6 +72,8 @@ public:
 
 	void SetScaredWithDelay();
 	void SetScared();
+
+	bool bDead = false;
 
 private:
 	int32 CurrentWaypointIndex = -1;
