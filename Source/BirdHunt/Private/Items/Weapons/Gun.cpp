@@ -73,7 +73,10 @@ void AGun::PullTrigger()
         FRotator ShotRotation = ShotDirection.Rotation();
 
         AShot* shot = GetWorld()->SpawnActor<AShot>(ProjectileClass, Location, ShotRotation);
-        shot->SetOwner(this->GetOwner());
+        if(this->GetOwner())
+        {
+            shot->SetOwner(this->GetOwner());
+        }
     }
     ShotsRemaining = 0;
 
