@@ -89,11 +89,7 @@ void ABird::OnShot()
 		);
 	}
 
-	ABirdHuntGameMode* GM = Cast<ABirdHuntGameMode>(UGameplayStatics::GetGameMode(this));
-	if (GM)
-	{
-		GM->RegisterShot(SpeciesIndex);
-	}
+
 
 	Body->SetSimulatePhysics(true);
 

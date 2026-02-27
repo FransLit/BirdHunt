@@ -2,6 +2,21 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/UI/PlayerHUD.h"
+#include "InputAction.h"
+
+void ABHPlayerController::ShowStats(const FInputActionInstance& Instance)
+{
+	ETriggerEvent EventType = Instance.GetTriggerEvent();
+	if (EventType == ETriggerEvent::Started)
+	{
+		HUDWidget->ShowStats(ESlateVisibility::Visible);
+	}
+	else if (EventType == ETriggerEvent::Completed)
+	{
+		HUDWidget->ShowStats(ESlateVisibility::Hidden);
+	}
+}
 
 void ABHPlayerController::BeginPlay()
 {
@@ -20,37 +35,26 @@ void ABHPlayerController::BeginPlay()
 	//		}
 	//	}
 	//}
+
+	if (HUDWidgetClass)
+	{
+		HUDWidget = CreateWidget<UPlayerHUD>(this, HUDWidgetClass);
+		if (HUDWidget)
+		{
+			HUDWidget->AddToViewport();
+			HUDWidget->ShowStats(ESlateVisibility::Hidden);
+		}
+	}
 }
 
 void ABHPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
-	if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent))
-	{
-		if (NavigateAction)
-			EnhancedInput->BindAction(NavigateAction, ETriggerEvent::Triggered, this, &ABHPlayerController::Navigate);
+	//if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent))
+	//{
 
-		if (ConfirmAction)
-			EnhancedInput->BindAction(ConfirmAction, ETriggerEvent::Started, this, &ABHPlayerController::Confirm);
-
-		if (BackAction)
-			EnhancedInput->BindAction(BackAction, ETriggerEvent::Started, this, &ABHPlayerController::Back);
-	}
+	//}
 }
 
-void ABHPlayerController::Navigate(const FInputActionValue& Value)
-{
-	FVector2D NavVector = Value.Get<FVector2D>();
-	UE_LOG(LogTemp, Warning, TEXT("UI Navigate: %s"), *NavVector.ToString());
-}
 
-void ABHPlayerController::Confirm()
-{
-	UE_LOG(LogTemp, Warning, TEXT("UI Confirm Pressed"));
-}
-
-void ABHPlayerController::Back()
-{
-	UE_LOG(LogTemp, Warning, TEXT("UI Back Pressed"));
-}

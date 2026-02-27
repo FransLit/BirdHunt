@@ -23,10 +23,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Spawning")
 	TArray<AActor*> Waypoints;
 
-	void RegisterShot(int32 SpeciesIndex);
+	void RegisterShot(AActor* owner, int32 SpeciesIndex);
 
 protected:
 	virtual void BeginPlay() override;
+
+	void PostLogin(APlayerController* NewPlayer);
 
 private:
 	TArray<int32> SpeciesShotCounts;

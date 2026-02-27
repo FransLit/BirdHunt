@@ -50,7 +50,6 @@ void AGun::BeginPlay()
 void AGun::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void AGun::PullTrigger()
@@ -69,7 +68,8 @@ void AGun::PullTrigger()
         FVector ShotDirection = FMath::VRandCone(Forward, SpreadRad);
         FRotator ShotRotation = ShotDirection.Rotation();
 
-        GetWorld()->SpawnActor<AShot>(ProjectileClass, Location, ShotRotation);
+        AShot* shot = GetWorld()->SpawnActor<AShot>(ProjectileClass, Location, ShotRotation);
+        shot->SetOwner(this->GetOwner());
     }
     ShotsRemaining = 0;
 

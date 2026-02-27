@@ -7,6 +7,7 @@
 
 class UProjectileMovementComponent;
 class USphereComponent;
+class APlayerCharacter;
 
 UCLASS()
 class BIRDHUNT_API AShot : public AActor
@@ -32,6 +33,7 @@ protected:
 
     UPROPERTY(EditDefaultsOnly, Category = "Shotgun")
     float SpreadAngle = 5.f; // degrees
+
 
 public:	
 	virtual void Tick(float DeltaTime) override;

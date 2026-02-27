@@ -2,10 +2,54 @@
 #include "Bird.h"
 #include "Waypoint.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/PlayerCharacter.h"
+#include "Player/BHPlayerState.h"
+
+
+
 
 ABirdHuntGameMode::ABirdHuntGameMode()
 {
 	DefaultPawnClass = nullptr;
+}
+
+void ABirdHuntGameMode::RegisterShot(AActor* owner, int32 SpeciesIndex)
+{
+	APlayerCharacter* Character = Cast<APlayerCharacter>(owner);
+	if (!Character)
+		return;
+
+	APlayerState* PlayerState = Character->GetPlayerState();
+	if (!PlayerState)
+		return;
+
+	ABHPlayerState* PS = Cast<ABHPlayerState>(PlayerState);
+	if (PS)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Shot a bird 1"))
+		if(PS->SpeciesShotCounts.IsValidIndex(SpeciesIndex))
+		{
+			UE_LOG(LogTemp, Error, TEXT("Shot a bird 2"))
+			PS->OnRepSpeciesShotCounts();
+			PS->SpeciesShotCounts[SpeciesIndex] += 1;
+		}
+	}
+	//ABird* DefaultBird = BirdClass->GetDefaultObject<ABird>();
+	//if (!DefaultBird) return;
+
+	//FString SpeciesName = TEXT("Unknown");
+
+	//if (DefaultBird->SpeciesMeshes.IsValidIndex(SpeciesIndex) &&
+	//	DefaultBird->SpeciesMeshes[SpeciesIndex])
+	//{
+	//	SpeciesName = DefaultBird->SpeciesMeshes[SpeciesIndex]->GetName();
+	//}
+
+	//UE_LOG(LogTemp, Warning,
+	//	TEXT("Species %s shot! Total: %d"),
+	//	*SpeciesName,
+	//	SpeciesShotCounts[SpeciesIndex]
+	//);
 }
 
 void ABirdHuntGameMode::BeginPlay()
@@ -45,27 +89,21 @@ void ABirdHuntGameMode::BeginPlay()
 	}
 }
 
-void ABirdHuntGameMode::RegisterShot(int32 SpeciesIndex)
-{
-	if (!SpeciesShotCounts.IsValidIndex(SpeciesIndex))
-		return;
 
-	SpeciesShotCounts[SpeciesIndex]++;
+void ABirdHuntGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
 
 	ABird* DefaultBird = BirdClass->GetDefaultObject<ABird>();
 	if (!DefaultBird) return;
 
-	FString SpeciesName = TEXT("Unknown");
-
-	if (DefaultBird->SpeciesMeshes.IsValidIndex(SpeciesIndex) &&
-		DefaultBird->SpeciesMeshes[SpeciesIndex])
+	int NumSpecies = DefaultBird->SpeciesMeshes.Num();
+	if (NewPlayer)
 	{
-		SpeciesName = DefaultBird->SpeciesMeshes[SpeciesIndex]->GetName();
+		ABHPlayerState* PS = Cast<ABHPlayerState>(NewPlayer->GetPlayerState<ABHPlayerState>());
+		if (PS)
+		{
+			PS->SpeciesShotCounts.Init(0, NumSpecies);
+		}
 	}
-
-	UE_LOG(LogTemp, Warning,
-		TEXT("Species %s shot! Total: %d"),
-		*SpeciesName,
-		SpeciesShotCounts[SpeciesIndex]
-	);
 }

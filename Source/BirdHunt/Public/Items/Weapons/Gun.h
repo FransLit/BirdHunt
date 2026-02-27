@@ -6,6 +6,7 @@
 #include "Gun.generated.h"
 
 class AShot;
+class APlayerCharacter;
 
 UCLASS()
 class BIRDHUNT_API AGun : public AActor

@@ -3,33 +3,32 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "InputActionValue.h"
+#include "InputAction.h"
 #include "BHPlayerController.generated.h"
 
 class UInputMappingContext;
 class UInputAction;
+class UPlayerHUD;
 
 UCLASS()
 class BIRDHUNT_API ABHPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
+public:
+	void ShowStats(const FInputActionInstance& Instance);
+	UPROPERTY()
+	UPlayerHUD* HUDWidget;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 
-	void Navigate(const FInputActionValue& Value);
-	void Confirm();
-	void Back();
-
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	UInputMappingContext* UIInputMappingContext;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	UInputAction* NavigateAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UPlayerHUD> HUDWidgetClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	UInputAction* ConfirmAction;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	UInputAction* BackAction;
 };
