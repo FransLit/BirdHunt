@@ -31,6 +31,14 @@ protected:
         UPrimitiveComponent* OtherComp, FVector NormalImpulse,
         const FHitResult& Hit);
 
+    UFUNCTION()
+    void OnOverlap(UPrimitiveComponent* OverlappedComp,
+        AActor* OtherActor,
+        UPrimitiveComponent* OtherComp,
+        int32 OtherBodyIndex,
+        bool bFromSweep,
+        const FHitResult& SweepResult);
+
     UPROPERTY(EditDefaultsOnly, Category = "Shotgun")
     float SpreadAngle = 5.f; // degrees
 

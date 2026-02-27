@@ -7,6 +7,9 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Animation/AnimInstance.h"
 
+#include "Kismet/KismetSystemLibrary.h"
+#include "DrawDebugHelpers.h"
+
 
 ABird::ABird()
 {
@@ -56,6 +59,19 @@ void ABird::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	//if (bFalling)
+	//{
+	//	FVector CurrentLocation = GetActorLocation();
+	//	FVector NewLocation = FMath::VInterpConstantTo(CurrentLocation, GroundTargetLocation, DeltaTime, FallSpeed);
+	//	SetActorLocation(NewLocation);
+
+	//	if (FVector::Dist(NewLocation, GroundTargetLocation) < 10.f)
+	//	{
+	//		bFalling = false;
+	//	}
+	//}
+	if (bDead) return;
+
 	if (bScared)
 	{
 		MoveToEscape(DeltaTime);
@@ -88,12 +104,16 @@ void ABird::OnShot()
 			GetActorRotation()
 		);
 	}
+	bDead = true;
+	bFalling = true;
+	//TraceToGround();
 
-
-
-	Body->SetSimulatePhysics(true);
+	CollisionBox->SetSimulatePhysics(true);
+	//Body->SetSimulatePhysics(true);
 
 	//Destroy();
+	Body->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 }
 
 void ABird::ChooseNewRandomWaypoint(int32 WaypointCount)
@@ -217,4 +237,38 @@ void ABird::SetScaredWithDelay()
 void ABird::SetScared()
 {
 	bScared = true;
+}
+
+
+
+void ABird::TraceToGround()
+{
+	FVector Start = GetActorLocation();
+
+	// Direction: mostly down (-Z), but slightly forward along actor's forward vector
+	FVector ForwardXZ = GetActorForwardVector();
+	ForwardXZ.Z = 0.f; // flatten to XZ plane if needed
+	ForwardXZ.Normalize();
+
+	float ForwardOffset = 200.f; // how far forward the trace goes
+	float DownDistance = 10000.f; // how far down the trace goes
+
+	FVector End = Start + ForwardXZ * ForwardOffset - FVector(0.f, 0.f, DownDistance);
+
+	FHitResult Hit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this); // ignore self
+
+	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_WorldStatic, Params))
+	{
+		// Use X/Y offset towards forward direction, Z from ground hit
+		GroundTargetLocation = FVector(Start.X + ForwardXZ.X * ForwardOffset,
+			Start.Y + ForwardXZ.Y * ForwardOffset,
+			Hit.Location.Z);
+
+		bFalling = true;
+
+		// Optional debug draw
+		DrawDebugSphere(GetWorld(), GroundTargetLocation, 20.f, 12, FColor::Red, false, 5.f);
+	}
 }

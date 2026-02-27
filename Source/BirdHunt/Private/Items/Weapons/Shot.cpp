@@ -8,27 +8,32 @@
 
 
 
+
 AShot::AShot()
 {
     PrimaryActorTick.bCanEverTick = false;
 
+    // Collision
     CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
     CollisionComponent->InitSphereRadius(8.f);
     RootComponent = CollisionComponent;
 
+    CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
     CollisionComponent->SetCollisionObjectType(ECC_GameTraceChannel1); // Pellet
 
-    CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
     CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+
+    // Overlap birds
+    CollisionComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
 
     // Block environment
     CollisionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
 
-    // Block birds (since ABird is likely WorldDynamic)
-    CollisionComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);
+    CollisionComponent->SetGenerateOverlapEvents(true);
 
-    CollisionComponent->OnComponentHit.AddDynamic(this, &AShot::OnHit);
+    CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AShot::OnOverlap);
 
+    // Projectile Movement
     ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
     ProjectileMovement->InitialSpeed = 6000.f;
     ProjectileMovement->MaxSpeed = 6000.f;
@@ -69,7 +74,6 @@ void AShot::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
         ABird* HitBird = Cast<ABird>(OtherActor);
         if (HitBird && !HitBird->bDead)
         {
-            HitBird->bDead = true;
             HitBird->OnShot(); 
             ABirdHuntGameMode* GM = Cast<ABirdHuntGameMode>(UGameplayStatics::GetGameMode(this));
             if (GM)
@@ -78,5 +82,30 @@ void AShot::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
             }
             Destroy();
         }
+    }
+}
+
+void AShot::OnOverlap(UPrimitiveComponent* OverlappedComp,
+    AActor* OtherActor,
+    UPrimitiveComponent* OtherComp,
+    int32 OtherBodyIndex,
+    bool bFromSweep,
+    const FHitResult& SweepResult)
+{
+    if (!OtherActor || OtherActor == this)
+        return;
+
+    ABird* HitBird = Cast<ABird>(OtherActor);
+    if (HitBird && !HitBird->bDead)
+    {
+        HitBird->OnShot();
+
+        ABirdHuntGameMode* GM = Cast<ABirdHuntGameMode>(UGameplayStatics::GetGameMode(this));
+        if (GM)
+        {
+            GM->RegisterShot(GetOwner(), HitBird->SpeciesIndex);
+        }
+
+        Destroy();
     }
 }
