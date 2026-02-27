@@ -30,6 +30,7 @@ protected:
 
 	void PostLogin(APlayerController* NewPlayer);
 
+	void HandleStartingNewPlayer(APlayerController* NewPlayer);
 private:
 	TArray<int32> SpeciesShotCounts;
 };

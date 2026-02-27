@@ -19,8 +19,6 @@ public:
 	UPROPERTY(ReplicatedUsing=OnRepSpeciesShotCounts)
 	TArray<int32> SpeciesShotCounts;
 
-	void ResetSpeciesShotCounts(int num);
-
 	UFUNCTION()
 	void OnRepSpeciesShotCounts();
 
