@@ -8,6 +8,7 @@
 
 class USkeletalMeshComponent;
 class UAnimInstance;
+class AAKillWidgetActor;
 
 UCLASS()
 class BIRDHUNT_API ABird : public AActor
@@ -85,6 +86,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Bird|Movement")
 	float FallSpeed = 500.f;
+	
+	UPROPERTY(EditAnywhere, Category = "Bird|Movement")
+	TSubclassOf<AAKillWidgetActor> KillWidgetActorClass;
 private:
 	int32 CurrentWaypointIndex = -1;
 	bool bIsWaiting = false;
@@ -100,6 +104,4 @@ private:
 
 	void MoveToWaypoint(float DeltaTime);
 	void ChooseNewRandomWaypoint(int32 WaypointCount);
-
-
 };
