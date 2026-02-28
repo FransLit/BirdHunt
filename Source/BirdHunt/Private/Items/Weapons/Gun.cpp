@@ -57,6 +57,13 @@ void AGun::Tick(float DeltaTime)
 
 void AGun::PullTrigger()
 {
+    if (bReloading) return;
+    UAnimInstance* AnimInstance = Mesh->GetAnimInstance();
+    if (AnimInstance && !AnimInstance->Montage_IsPlaying(ClickMontage))
+    {
+        AnimInstance->Montage_Play(ClickMontage, 1.0f);
+    }
+
     if (!ProjectileClass || ShotsRemaining == 0) return;
 
     UE_LOG(LogTemp, Warning, TEXT("FIRE"));

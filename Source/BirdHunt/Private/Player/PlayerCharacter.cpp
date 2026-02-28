@@ -53,6 +53,8 @@ void APlayerCharacter::BeginPlay()
             );
 
             Gun->SetOwner(this);
+
+            Gun->SetActorRelativeLocation(GunRelativeLocation);
         }
     }
 }

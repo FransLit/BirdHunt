@@ -42,6 +42,9 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     USkeletalMeshComponent* Mesh;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations")
+    UAnimMontage* ClickMontage;
+
 protected:
 	virtual void BeginPlay() override;
 
