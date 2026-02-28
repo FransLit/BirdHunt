@@ -10,6 +10,11 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "DrawDebugHelpers.h"
 
+#include "Components/WidgetComponent.h"
+#include "AKillWidgetActor.h"
+
+
+
 
 ABird::ABird()
 {
@@ -31,8 +36,6 @@ ABird::ABird()
 	Body = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Body"));
 	Body->SetupAttachment(CollisionBox);
 	Body->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-
 }
 
 void ABird::BeginPlay()
@@ -95,6 +98,20 @@ void ABird::Tick(float DeltaTime)
 
 void ABird::OnShot()
 {
+
+	FVector SpawnLoc = GetActorLocation() + FVector(0.f, 0.f, 100.f);
+
+	AAKillWidgetActor* WidgetActor = GetWorld()->SpawnActor<AAKillWidgetActor>(
+		KillWidgetActorClass,
+		SpawnLoc,
+		FRotator::ZeroRotator
+	);
+
+	if (WidgetActor)
+	{
+		WidgetActor->InitWidget(1); // show 1 bird killed
+	}
+
 	if (ShotEffect)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
@@ -104,6 +121,16 @@ void ABird::OnShot()
 			GetActorRotation()
 		);
 	}
+
+	if (ShotSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			ShotSound,
+			GetActorLocation()
+		);
+	}
+
 	bDead = true;
 	bFalling = true;
 	//TraceToGround();
@@ -113,6 +140,7 @@ void ABird::OnShot()
 
 	//Destroy();
 	Body->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 
 }
 
