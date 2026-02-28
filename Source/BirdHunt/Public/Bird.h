@@ -9,6 +9,7 @@
 class USkeletalMeshComponent;
 class UAnimInstance;
 class AAKillWidgetActor;
+class USoundBase;
 
 UCLASS()
 class BIRDHUNT_API ABird : public AActor
@@ -89,6 +90,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category = "Bird|Movement")
 	TSubclassOf<AAKillWidgetActor> KillWidgetActorClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	USoundBase* ShotSound;
 private:
 	int32 CurrentWaypointIndex = -1;
 	bool bIsWaiting = false;

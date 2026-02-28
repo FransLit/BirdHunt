@@ -121,6 +121,16 @@ void ABird::OnShot()
 			GetActorRotation()
 		);
 	}
+
+	if (ShotSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			ShotSound,
+			GetActorLocation()
+		);
+	}
+
 	bDead = true;
 	bFalling = true;
 	//TraceToGround();
