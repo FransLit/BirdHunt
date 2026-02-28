@@ -28,6 +28,7 @@ void AGun::Reload()
 
 void AGun::StartReloading()
 {
+    if (bReloading) return;
     FTimerHandle TimerHandle;
 
     bReloading = true;
