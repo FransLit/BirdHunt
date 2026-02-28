@@ -44,6 +44,10 @@ protected:
     void Aim();
     void Reload();
     void ShowStats();
+
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector GunRelativeLocation;
     
 private:
     UPROPERTY(EditDefaultsOnly, Category = "Input")
@@ -72,4 +76,5 @@ private:
     bool bAiming = false;
     float DefaultWalkSpeed;
     float SprintSpeed = 900.f;
+
 };
