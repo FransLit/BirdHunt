@@ -15,7 +15,7 @@ public:
 	// Sets default values for this actor's properties
 	AEscapePoint();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Waypoint")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Waypoint")
 	USceneComponent* EscapePoint;
 
 protected:
